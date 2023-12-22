@@ -528,18 +528,21 @@ protobuf = ">=4.21.6"
 [[package]]
 name = "gsay"
 version = "0.1.4.dev0"
-description = "Nightcored Google TTS"
+description = "Nightcored Google TTS. [Project Page](https://github.com/johannesCmayer/gsay)."
 optional = false
 python-versions = ">=3.10,<4.0"
 files = [
-    {file = "gsay-0.1.4.dev0-py3-none-any.whl", hash = "sha256:c42aeaf757a98b011e9116d77804c824ea0168fcdef7e8f6fc4bf4ae1b1789a2"},
-    {file = "gsay-0.1.4.dev0.tar.gz", hash = "sha256:f8f18a7dfae046c1a5acfa004ac42a49630b9dd309feef582f8b510cea272f6b"},
+    {file = "gsay-0.1.4.dev0-py3-none-any.whl", hash = "sha256:eb6b35476745637a6d43aba271e9b861d886e008f40bb105eb0f8ea8ecb97719"},
 ]
 
 [package.dependencies]
 google-cloud-texttospeech = ">=2.15.0,<3.0.0"
 pyyaml = ">=6.0.1,<7.0.0"
 xdg-base-dirs = ">=6.0.1,<7.0.0"
+
+[package.source]
+type = "file"
+url = "../gsay/dist/gsay-0.1.4.dev0-py3-none-any.whl"
 
 [[package]]
 name = "idna"
@@ -1140,4 +1143,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "abe481e207c51df9a5532471a55e4cc8e035a48dc034302321a40a4a808a7681"
+content-hash = "d4472280a808ab56eff1896170366be989726a02e4ac7b7da6cdedd86a92b534"

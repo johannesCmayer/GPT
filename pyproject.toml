@@ -19,8 +19,8 @@ openai = "^0.27.8"
 prompt-toolkit = "^3.0.43"
 tiktoken = "^0.5.2"
 pyyaml = "^6.0.1"
-gsay = {path = "../gsay"}
 xdg-base-dirs = "^6.0.1"
+gsay = "0.1.4.dev0"
 
 [build-system]
 requires = ["poetry-core"]
