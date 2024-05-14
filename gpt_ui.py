@@ -17,7 +17,7 @@ from typing import List, Optional, Tuple, Union, Any
 import html
 from threading import Thread
 import sys
-from gsay import speak
+from gsay.gsay import speak
 
 import tiktoken
 import yaml
@@ -29,6 +29,8 @@ from prompt_toolkit.history import FileHistory
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.completion import WordCompleter
 from xdg_base_dirs import xdg_config_home
+from rich import print
+
 
 # Basic helper functions
 def timestamp():
@@ -110,7 +112,7 @@ parser.add_argument('--list-all-chats', action='store_true', help='List all chat
 parser.add_argument('--list-models', action='store_true', help='List all models')
 parser.add_argument('--list-models-full', action='store_true', help='List all models and their details')
 parser.add_argument('--speak', default=speak_default, action='store_true', help='Speak the messages.')
-parser.add_argument('-p', '--personality', default='helpful_assistant', type=str, choices=[x.stem for x in prompt_dir.iterdir()], help='Set the system prompt based on predefined file.')
+parser.add_argument('-p', '--personality', default='default', type=str, choices=[x.stem for x in prompt_dir.iterdir()], help='Set the system prompt based on predefined file.')
 parser.add_argument('--config', action='store_true', help='Open the config file.')
 parser.add_argument('--debug', action='store_true', help='Run with debug settings. Includes notifications.')
 parser.add_argument('--export-chats-to-markdown', action='store_true', help='Re export all named chats as markdown files into the chat directory.')
@@ -124,15 +126,17 @@ else:
         args.user_input = None
 
 assistant_name = 'assistant'
-def GET_DEFAULT_CHAT(): 
-    prompt_path = prompt_dir / (args.personality + ".yaml")
-    if not prompt_path.exists():
-        print(f"Prompt file {prompt_path} does not exist.")
-        print("The foolowing prompt files are available:")
-        for prompt_file in (project_dir / 'prompts').iterdir():
-            print(prompt_file.stem)
-        exit(0)
-    return yaml.load(prompt_path.open(), yaml.FullLoader)
+
+def get_system_prompt_chat(id):
+    system_prompts = yaml.load((project_dir / 'prompts' / 'system_prompts.yaml').open(), yaml.FullLoader)
+    prompt_text = system_prompts[id]
+    return [{
+        'role': 'system', 
+        'content': prompt_text
+    }]
+    
+def get_inital_chat() -> List[dict]: 
+    return get_system_prompt_chat(args.personality)
 
 class Command:
     def __init__(self, str_matches, description):
@@ -567,7 +571,7 @@ def main():
         exit(0)
 
     if args.user_input:
-        chat = GET_DEFAULT_CHAT()
+        chat = get_inital_chat()
         chat.append({'role': 'user', 'content': args.user_input, 'user': config['user']})
     elif args.load_chat:
         with (chat_dir / ensure_extension(args.load_chat, ".json")).open() as f:
@@ -577,7 +581,7 @@ def main():
         with chat_path.open() as f:
             chat = json.load(f)
     else:
-        chat = GET_DEFAULT_CHAT()
+        chat = get_inital_chat()
 
     print_chat(chat)
 
@@ -626,7 +630,7 @@ def main():
                     continue
                 elif user_input in commands.restart.str_matches:
                     backup_chat(chat)
-                    chat = GET_DEFAULT_CHAT()
+                    chat = get_inital_chat()
                     pt.print_formatted_text('\n\n')
                     pt.print_formatted_text(chat)
                     active_role = next_role(chat)
