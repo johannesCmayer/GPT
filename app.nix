@@ -6,9 +6,11 @@ pkgs.python310Packages.buildPythonPackage rec {
   propagatedBuildInputs = with pkgs.python310Packages; [
     gsay.packages.x86_64-linux.default
     pkgs.python310
+    openai
+    prompt-toolkit
+    tiktoken
     pyyaml
     xdg-base-dirs
     rich
-    google-cloud-texttospeech
   ];
 }

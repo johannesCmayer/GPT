@@ -43,90 +43,6 @@ def set_terminal_title(title):
         sys.stdout.write(f"\x1b]0;{title}\x07")
         sys.stdout.flush()
 
-# Setting up Paths and looading config 1/2
-project_dir = Path(__file__).parent.absolute()
-
-config_dir = xdg_config_home() / 'gpt-ui'
-config_file = config_dir / "config.yaml"
-config_file_local = config_dir / "config_local.yaml"
-
-# Loading config
-config = yaml.load(config_file.open(), yaml.FullLoader)
-# Load local config file and overwrite default config
-if config_file_local.exists():
-    config.update(yaml.load(config_file_local.open(), yaml.FullLoader))
-openai.api_key = yaml.load((config_dir / 'api_key.yaml').open(), yaml.FullLoader).get('api_key')
-
-model = config['default_model']
-user = config['user']
-models_dict = yaml.load((project_dir / 'models_metadata.yaml').open(), yaml.FullLoader)
-max_tokens = models_dict[model]['max_tokens']
-speak_default = config['speak']
-
-# Setting up paths 2/2
-if config["chat_dir"] is not None:
-    chat_dir = Path(config["chat_dir"]).expanduser()
-    if not chat_dir.exists():
-        raise FileNotFoundError(f"Chat directory {chat_dir} does not exist.")
-else:
-    chat_dir = project_dir / "chats"
-    chat_dir.mkdir(exist_ok=True)
-
-chat_backup_file = chat_dir / f".backup_{timestamp()}.json"
-
-prompt_history_dir = project_dir / "prompt_history"
-prompt_history_dir.mkdir(exist_ok=True)
-
-prompt_dir = project_dir / 'prompts'
-prompt_dir.mkdir(exist_ok=True)
-
-voice_precache_dir = project_dir / 'voice_precache'
-voice_precache_dir.mkdir(exist_ok=True)
-
-chat_dir.mkdir(exist_ok=True)
-prompt_history_dir.mkdir(exist_ok=True)
-
-obsidian_vault_dir = Path(config['obsidian_vault_dir']).expanduser()
-if not obsidian_vault_dir.exists():
-    raise FileNotFoundError(f"Obsidian vault directory {obsidian_vault_dir} does not exist.")
-
-enc = tiktoken.encoding_for_model(model)
-
-# Parsing Arguments
-parser = argparse.ArgumentParser(description=
-    "Press CTRL+C to stop generating the message. "
-    "In user role press CTRL+D to exit the chat. You will first be asked to save the chat. "
-    "Press CTRL+D in the safe dialog to exit the program without saving the chat. "
-    "\n\n"
-    "During a chat session there are a number of runtime commands you can enter as the user role. Enter 'help' as the "
-    "user role to see all available runtime commands."
-    "\n\n"
-    "You can use :file:FILENAME: to show the contents of FILENAME to GPT, while in the UI the text will "
-    "not be expanded. Similarly you can use :obsidian:FILENAME: in order to search the obsidian vault "
-    "(needs to be configured in config.yaml) for the file FILENAME and show the contents to GPT.")
-parser.add_argument('--chat-name', type=str, help='Name of the chat')
-parser.add_argument('--load-chat', type=str, help='Name of the chat to load')
-parser.add_argument('--load-last-chat', action='store_true', help='Name of the chat to load')
-parser.add_argument('--list-chats', action='store_true', help='List all chats')
-parser.add_argument('--list-all-chats', action='store_true', help='List all chats including hidden backup chats')
-parser.add_argument('--list-models', action='store_true', help='List all models')
-parser.add_argument('--list-models-full', action='store_true', help='List all models and their details')
-parser.add_argument('--speak', default=speak_default, action='store_true', help='Speak the messages.')
-parser.add_argument('-p', '--personality', default='default', type=str, choices=[x.stem for x in prompt_dir.iterdir()], help='Set the system prompt based on predefined file.')
-parser.add_argument('--config', action='store_true', help='Open the config file.')
-parser.add_argument('--debug', action='store_true', help='Run with debug settings. Includes notifications.')
-parser.add_argument('--export-chats-to-markdown', action='store_true', help='Re export all named chats as markdown files into the chat directory.')
-parser.add_argument('user_input',  type=str, nargs='*', help='Initial input the user gives to the chat bot.')
-args = parser.parse_args()
-if args.user_input == []:
-    args.user_input = None
-else:
-    args.user_input = " ".join(args.user_input)
-    if args.user_input == "":
-        args.user_input = None
-
-assistant_name = 'assistant'
-
 def get_system_prompt_chat(id):
     system_prompts = yaml.load((project_dir / 'prompts' / 'system_prompts.yaml').open(), yaml.FullLoader)
     prompt_text = system_prompts[id]
@@ -774,4 +690,90 @@ def debug_notify(msg):
         os.system(f"notify-send '{msg}'")
 
 if __name__ == "__main__":
+    project_dir = Path(__file__).parent.absolute()
+
+    config_dir = xdg_config_home() / 'gpt-ui'
+    config_file = config_dir / "config.yaml"
+    config_file_local = config_dir / "config_local.yaml"
+
+    config = yaml.load(config_file.open(), yaml.FullLoader)
+    # Load local config file and overwrite default config
+    if config_file_local.exists():
+        config.update(yaml.load(config_file_local.open(), yaml.FullLoader))
+    openai.api_key = yaml.load((config_dir / 'api_key.yaml').open(), yaml.FullLoader).get('api_key')
+
+    # Loading config
+    model = config['default_model']
+    user = config['user']
+    models_dict = yaml.load((project_dir / 'models_metadata.yaml').open(), yaml.FullLoader)
+    max_tokens = models_dict[model]['max_tokens']
+    speak_default = config['speak']
+
+    # Setting up paths 2/2
+    if config["chat_dir"] is not None:
+        chat_dir = Path(config["chat_dir"]).expanduser()
+        if not chat_dir.exists():
+            raise FileNotFoundError(f"Chat directory {chat_dir} does not exist.")
+    else:
+        chat_dir = project_dir / "chats"
+        chat_dir.mkdir(exist_ok=True)
+
+    # Setting up Paths and looading config 1/2
+
+
+    chat_backup_file = chat_dir / f".backup_{timestamp()}.json"
+
+    prompt_history_dir = project_dir / "prompt_history"
+    prompt_history_dir.mkdir(exist_ok=True)
+
+    prompt_dir = project_dir / 'prompts'
+    prompt_dir.mkdir(exist_ok=True)
+
+    voice_precache_dir = project_dir / 'voice_precache'
+    voice_precache_dir.mkdir(exist_ok=True)
+
+    chat_dir.mkdir(exist_ok=True)
+    prompt_history_dir.mkdir(exist_ok=True)
+
+    obsidian_vault_dir = Path(config['obsidian_vault_dir']).expanduser()
+    if not obsidian_vault_dir.exists():
+        raise FileNotFoundError(f"Obsidian vault directory {obsidian_vault_dir} does not exist.")
+
+    enc = tiktoken.encoding_for_model(model)
+
+    # Parsing Arguments
+    parser = argparse.ArgumentParser(description=
+        "Press CTRL+C to stop generating the message. "
+        "In user role press CTRL+D to exit the chat. You will first be asked to save the chat. "
+        "Press CTRL+D in the safe dialog to exit the program without saving the chat. "
+        "\n\n"
+        "During a chat session there are a number of runtime commands you can enter as the user role. Enter 'help' as the "
+        "user role to see all available runtime commands."
+        "\n\n"
+        "You can use :file:FILENAME: to show the contents of FILENAME to GPT, while in the UI the text will "
+        "not be expanded. Similarly you can use :obsidian:FILENAME: in order to search the obsidian vault "
+        "(needs to be configured in config.yaml) for the file FILENAME and show the contents to GPT.")
+    parser.add_argument('--chat-name', type=str, help='Name of the chat')
+    parser.add_argument('--load-chat', type=str, help='Name of the chat to load')
+    parser.add_argument('--load-last-chat', action='store_true', help='Name of the chat to load')
+    parser.add_argument('--list-chats', action='store_true', help='List all chats')
+    parser.add_argument('--list-all-chats', action='store_true', help='List all chats including hidden backup chats')
+    parser.add_argument('--list-models', action='store_true', help='List all models')
+    parser.add_argument('--list-models-full', action='store_true', help='List all models and their details')
+    parser.add_argument('--speak', default=speak_default, action='store_true', help='Speak the messages.')
+    parser.add_argument('-p', '--personality', default='default', type=str, choices=[x.stem for x in prompt_dir.iterdir()], help='Set the system prompt based on predefined file.')
+    parser.add_argument('--config', action='store_true', help='Open the config file.')
+    parser.add_argument('--debug', action='store_true', help='Run with debug settings. Includes notifications.')
+    parser.add_argument('--export-chats-to-markdown', action='store_true', help='Re export all named chats as markdown files into the chat directory.')
+    parser.add_argument('user_input',  type=str, nargs='*', help='Initial input the user gives to the chat bot.')
+    args = parser.parse_args()
+    if args.user_input == []:
+        args.user_input = None
+    else:
+        args.user_input = " ".join(args.user_input)
+        if args.user_input == "":
+            args.user_input = None
+
+    assistant_name = 'assistant'
+
     main()
