@@ -7,3 +7,4 @@ voice_precache
 dist/
 __pycache__/
 .direnv/
+result
