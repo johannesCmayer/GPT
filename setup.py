@@ -7,5 +7,5 @@ setup(name='gsay',
       # Modules to import from other scripts:
       packages=find_packages(),
       # Executables
-      scripts=["test"],
+      scripts=["gpt-ui"],
      )
