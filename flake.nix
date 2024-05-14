@@ -8,8 +8,6 @@
     packages.x86_64-linux.default =
       # Notice the reference to nixpkgs here.
       with import nixpkgs { system = "x86_64-linux"; };
-      (pkgs.writeShellScriptBin "hello-man" ''
-        echo hello there
-      '');
+      callPackage ./app.nix { inherit gsay; };
   };
 }
