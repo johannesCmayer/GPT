@@ -8,8 +8,8 @@ import yaml
 import argparse
 import tiktoken
 
-from gpt_ui import main
 from util import timestamp
+from gpt_ui import main
 
 class Conf:
     def __init__(self):
@@ -66,7 +66,12 @@ class Conf:
             raise FileNotFoundError(f"Obsidian vault directory {obsidian_vault_dir} does not exist.")
         self.obsidian_vault_dir = obsidian_vault_dir
 
-        self.enc = tiktoken.encoding_for_model(self.model)
+        try:
+            self.enc = tiktoken.encoding_for_model(self.model)
+        except KeyError as e:
+            print(f"WARNING: Could not determine encoder for {self.model}. Falling back to gpt-4 encoder.")
+            self.enc = tiktoken.encoding_for_model('gpt-4')
+
 
         # Parsing Arguments
         parser = argparse.ArgumentParser(description=
