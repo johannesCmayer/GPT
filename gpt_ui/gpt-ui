@@ -8,8 +8,8 @@ import yaml
 import argparse
 import tiktoken
 
-from util import timestamp
-from gpt_ui import main
+from gpt_ui.util import timestamp
+from gpt_ui.gpt_ui import main
 
 class Conf:
     def __init__(self):
