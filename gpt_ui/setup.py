@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 
 from pathlib import Path
-from xdg_base_dirs import xdg_config_home
+import tempfile
 
+from xdg_base_dirs import xdg_config_home
 import openai
 import yaml
 import argparse
 import tiktoken
 
 from gpt_ui.util import timestamp
-from gpt_ui.gpt_ui import main
+from gpt_ui.gpt_ui import converse
 
 class Conf:
     def __init__(self):
@@ -28,7 +29,7 @@ class Conf:
         # Loading config
         self.model = self.config['default_model']
         self.user = self.config['user']
-        self.models_dict = yaml.load((Path(__file__) / 'models_metadata.yaml').open(), yaml.FullLoader)
+        self.models_dict = yaml.load((self.project_dir / 'models_metadata.yaml').open(), yaml.FullLoader)
         self.max_tokens = self.models_dict[self.model]['max_tokens']
         self.speak_default = self.config['speak']
 
@@ -49,16 +50,12 @@ class Conf:
 
         self.chat_backup_file = chat_dir / f".backup_{timestamp()}.json"
 
-        prompt_history_dir = self.project_dir / "prompt_history"
-        prompt_history_dir.mkdir(exist_ok=True)
+        prompt_history_dir =  Path(tempfile.mkdtemp())
         self.prompt_history_dir = prompt_history_dir
 
-        prompt_dir = self.project_dir / 'prompts'
-        prompt_dir.mkdir(exist_ok=True)
-        self.prompt_dir = prompt_dir
+        self.prompt_dir = self.project_dir / 'prompts'
 
-        voice_precache_dir = self.project_dir / 'voice_precache'
-        voice_precache_dir.mkdir(exist_ok=True)
+        voice_precache_dir = Path(tempfile.mkdtemp())
         self.voice_precache_dir = voice_precache_dir
 
         obsidian_vault_dir = Path(self.config['obsidian_vault_dir']).expanduser()
@@ -93,7 +90,7 @@ class Conf:
         parser.add_argument('--list-models', action='store_true', help='List all models')
         parser.add_argument('--list-models-full', action='store_true', help='List all models and their details')
         parser.add_argument('--speak', default=self.speak_default, action='store_true', help='Speak the messages.')
-        parser.add_argument('-p', '--personality', default='default', type=str, choices=[x.stem for x in prompt_dir.iterdir()], help='Set the system prompt based on predefined file.')
+        parser.add_argument('-p', '--personality', default='default', type=str, choices=[x.stem for x in self.prompt_dir.iterdir()], help='Set the system prompt based on predefined file.')
         parser.add_argument('--config', action='store_true', help='Open the config file.')
         parser.add_argument('--debug', action='store_true', help='Run with debug settings. Includes notifications.')
         parser.add_argument('--export-chats-to-markdown', action='store_true', help='Re export all named chats as markdown files into the chat directory.')
@@ -110,6 +107,11 @@ class Conf:
 
         self.assistant_name = 'assistant'
 
+    def cleanup(self):
+        self.prompt_history_dir.cleanup()
+        self.voice_precache_dir.cleanup()
+
 def main():
     conf = Conf()
-    main(conf)
+    converse(conf)
+    conf.cleanup()

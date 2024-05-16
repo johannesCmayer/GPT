@@ -443,11 +443,13 @@ def sanetize_filename(filename):
     filename = re.sub('\.^', '', filename)
     return filename.strip()
     
-def main(conf):
+def converse(conf):
     bottom_toolbar_session = Toolbar(conf)
     speak_cmd = 'gsay'
-    save_name_session = PromptSession(history=FileHistory(conf.prompt_history_dir /'saveing.txt'), auto_suggest=AutoSuggestFromHistory())
-    user_prompt_session = PromptSession(history=FileHistory(conf.project_dir /'user_prompt.txt'), auto_suggest=AutoSuggestFromHistory())
+    # save_name_session = PromptSession(history=FileHistory(conf.prompt_history_dir /'saveing.txt'), auto_suggest=AutoSuggestFromHistory())
+    # user_prompt_session = PromptSession(history=FileHistory(conf.project_dir /'user_prompt.txt'), auto_suggest=AutoSuggestFromHistory())
+    save_name_session = PromptSession(auto_suggest=AutoSuggestFromHistory())
+    user_prompt_session = PromptSession(auto_suggest=AutoSuggestFromHistory())
     def bottom_toolbar():
         return str(bottom_toolbar_session)
     
@@ -505,9 +507,6 @@ def main(conf):
     prompt_postfix = conf.config['prompt_postfix']
 
     while True:
-        # Clear the voice cache
-        for f in conf.voice_precache_dir.iterdir():
-            f.unlink()
         try:
             if active_role in ['user', 'system']:
                 ctrl_d = 0

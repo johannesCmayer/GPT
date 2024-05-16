@@ -1,5 +1,5 @@
 import json
-import gpt_ui
+import gpt_ui.gpt_ui as gpt_ui
 
 test_chat_1 = [
     {

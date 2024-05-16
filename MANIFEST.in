@@ -1,2 +1,2 @@
-include models_metadata.yaml
-recursive-include data *
+include gpt_ui/models_metadata.yaml
+include gpt_ui/prompts/system_prompts.yaml
