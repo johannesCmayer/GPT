@@ -26,7 +26,7 @@ from prompt_toolkit.completion import WordCompleter
 from xdg_base_dirs import xdg_config_home
 from rich import print
 
-from util import timestamp
+from gpt_ui.util import timestamp
 
 # Basic helper functions
 def set_terminal_title(title):
