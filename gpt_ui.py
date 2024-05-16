@@ -501,10 +501,15 @@ def main():
 
     print_chat(chat)
 
+    print("INFO: To send a message you need to press ALT+ENTER. This is to enable multiline input.")
+
     active_role = next_role(chat)
     prompt_postfix = config['prompt_postfix']
 
     while True:
+        # Clear the voice cache
+        for f in voice_precache_dir.iterdir():
+            f.unlink()
         try:
             if active_role in ['user', 'system']:
                 ctrl_d = 0
